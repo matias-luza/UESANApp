@@ -18,10 +18,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -33,6 +35,9 @@ fun DrawerScaffold(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -41,23 +46,34 @@ fun DrawerScaffold(
                 Text("Menu principal", modifier = Modifier.padding(16.dp))
                 NavigationDrawerItem(
                     label = { Text("Home") },
-                    selected = false,
+                    selected = currentRoute == "home",
                     onClick = {
-                        navController.navigate("home")
+                        scope.launch { drawerState.close() }
+                        if (currentRoute != "home") {
+                            navController.navigate("home") {
+                                popUpTo("home") { inclusive = true }
+                            }
+                        }
                     }
                 )
                 NavigationDrawerItem(
                     label = { Text("Permissions") },
-                    selected = false,
+                    selected = currentRoute == "permissions",
                     onClick = {
-                        navController.navigate("permissions")
+                        scope.launch { drawerState.close() }
+                        if (currentRoute != "permissions") {
+                            navController.navigate("permissions")
+                        }
                     }
                 )
                 NavigationDrawerItem(
                     label = { Text("Favorites") },
-                    selected = false,
+                    selected = currentRoute == "favorites",
                     onClick = {
-                        navController.navigate("favorites")
+                        scope.launch { drawerState.close() }
+                        if (currentRoute != "favorites") {
+                            navController.navigate("favorites")
+                        }
                     }
                 )
             }

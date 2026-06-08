@@ -8,6 +8,7 @@ import com.example.uesanapp.presentation.auth.LoginScreen
 import com.example.uesanapp.presentation.auth.RegisterScreen
 import com.example.uesanapp.presentation.home.HomeScreen
 import com.example.uesanapp.presentation.permissions.GalleryPermissionsScreen
+import com.example.uesanapp.presentation.favorites.FavoritesScreen
 
 @Composable
 fun AppNavGraph() {
@@ -27,6 +28,11 @@ fun AppNavGraph() {
         composable("permissions") {
             DrawerScaffold(navController) {
                 GalleryPermissionsScreen()
+            }
+        }
+        composable("favorites") {
+            DrawerScaffold(navController) {
+                FavoritesScreen()
             }
         }
     }

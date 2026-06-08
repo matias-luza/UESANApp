@@ -1,4 +1,4 @@
-package com.example.uesanapp.presentation.home
+package com.example.uesanapp.presentation.favorites
 
 import android.app.Application
 import androidx.compose.foundation.background
@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -32,7 +33,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,20 +40,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.example.uesanapp.data.model.CountryModel
+import com.example.uesanapp.presentation.home.CountryViewModel
 
 @Composable
-fun HomeScreen() {
+fun FavoritesScreen() {
     val context = LocalContext.current.applicationContext as Application
     val viewModel: CountryViewModel = viewModel(
         factory = CountryViewModel.Factory(context)
     )
 
-    val countries = viewModel.countriesList.sortedBy { it.ranking }
-    val favoriteNames by viewModel.favoriteNames.collectAsState()
+    val favoriteCountries by viewModel.favoriteCountries.collectAsState()
 
     Column(
         modifier = Modifier
@@ -61,8 +62,7 @@ fun HomeScreen() {
             .background(MaterialTheme.colorScheme.surface)
     ) {
         Surface(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             color = Color.Transparent
         ) {
             Box(
@@ -76,19 +76,19 @@ fun HomeScreen() {
             ) {
                 Column {
                     Text(
-                        text = "Ranking",
+                        text = "Mis Preferidos",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                     )
                     Text(
-                        text = "FIFA 2026",
+                        text = "Favoritos",
                         style = MaterialTheme.typography.headlineLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "${countries.size} países rankeados",
+                        text = "${favoriteCountries.size} países guardados",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
                     )
@@ -96,27 +96,59 @@ fun HomeScreen() {
             }
         }
 
-        LazyColumn(
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(countries) { country ->
-                val isFavorite = favoriteNames.contains(country.name)
-                CountryCard(
-                    country = country,
-                    isFavorite = isFavorite,
-                    onFavoriteClick = { viewModel.toggleFavorite(country) }
-                )
+        if (favoriteCountries.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null,
+                        modifier = Modifier.size(72.dp),
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "No tienes favoritos aún",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Marca países con el icono de corazón en la pantalla principal para verlos aquí.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(favoriteCountries) { country ->
+                    FavoriteCountryCard(
+                        country = country,
+                        onUnfavoriteClick = { viewModel.toggleFavorite(country) }
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun CountryCard(
+private fun FavoriteCountryCard(
     country: CountryModel,
-    isFavorite: Boolean,
-    onFavoriteClick: () -> Unit
+    onUnfavoriteClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -182,11 +214,11 @@ private fun CountryCard(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            IconButton(onClick = onFavoriteClick) {
+            IconButton(onClick = onUnfavoriteClick) {
                 Icon(
-                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = if (isFavorite) "Quitar de favoritos" else "Añadir a favoritos",
-                    tint = if (isFavorite) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant
+                    imageVector = Icons.Default.Favorite,
+                    contentDescription = "Quitar de favoritos",
+                    tint = Color.Red
                 )
             }
         }
